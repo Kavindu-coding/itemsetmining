@@ -111,13 +111,17 @@ combined_dict = {k: v for inner_dict in reverse_mapping.values() for k, v in inn
 
 item_dataset = [tuple(x) for x in new_df.to_records(index=False)]
 
+# Add ID field to the start of each tuple
+item_dataset_withID = [(i,) + record for i, record in enumerate(item_dataset)]
+
 new_df.to_csv('data.txt', index=False, sep=' ', header=False)
 
 # Run the algorithm
 
 os.system("java -jar spmf.jar run FPMax data.txt output.txt 0.1%")
 
-itemset_records = []
+itemset_records_object = []
+itemset_records_numbers = []
 
 # Read the output file line by line
 outFile = open("output.txt", 'r', encoding='utf-8')
@@ -127,12 +131,15 @@ for string in outFile:
     numbers = list(map(int, parts[0].split()))
     support_count = int(parts[1].strip())
 
+    itemset_using_numbers = [numbers, support_count]
+    itemset_records_numbers.append(itemset_using_numbers)
+
     # Translate numerical values to attribute names using reverse mapping
     attribute_names = [str(combined_dict[num]) for num in numbers]
     itemset = [attribute_names, support_count]
     # Output the result
-    print(f"Pattern: {' '.join(attribute_names)}, Support Count: {str(support_count)}")
-    itemset_records.append(itemset)
+    # print(f"Pattern: {' '.join(attribute_names)}, Support Count: {str(support_count)}")
+    itemset_records_object.append(itemset)
 
 outFile.close()
 
@@ -141,4 +148,21 @@ type_counts = df[' Label'].value_counts()
 
 print("\nDisplay the count of unique values in Label")
 print(type_counts)
+
+def return_unique_labels(alertID_List):
+    # Filter DataFrame based on selected IDs
+    selected_records = df.iloc[alertID_List]
+    # Count unique values in a certain field (e.g., Field1) in the selected records
+    unique_value_counts = selected_records[' Label'].value_counts()
+    return(unique_value_counts)
+
+for index,record in enumerate(itemset_records_numbers):
+    itemset = record[0]
+    containing_alerts = []
+    for alert in item_dataset_withID:
+        alert_items = set(alert[1:])  # Exclude the ID field
+        if set(itemset).issubset(alert_items):
+            containing_alerts.append(alert[0])  # Append the ID
+
+    print(f"Pattern {index}: {itemset_records_object[index][0]}, \n{return_unique_labels(containing_alerts)}\n===============================================================================================================")
 
