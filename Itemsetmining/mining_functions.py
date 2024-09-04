@@ -27,7 +27,7 @@ def categorize_value(value, ranges):
 
 def adaptive_bin_handling(column_name, df, bin_data):
     bin_ranges, bin_edges = pd.qcut(df[f'{column_name}'], 10, labels=None, retbins=True, precision=2, duplicates='drop')
-    print(bin_ranges.value_counts())
+    # print(bin_ranges.value_counts())
 
     ranges = {}
     for idx in range(len(bin_edges) - 1):
@@ -37,7 +37,7 @@ def adaptive_bin_handling(column_name, df, bin_data):
 
     # Apply categorization to 'Flow Duration' column
     df[f'{column_name} Category'] = df[f'{column_name}'].apply(lambda x: categorize_value(x, ranges))
-    print(df[f'{column_name} Category'].value_counts())
+    # print(df[f'{column_name} Category'].value_counts())
 
     # plt.figure(figsize=(20, 8))
     # sns.histplot(data=df, x=df[f'{column_name} Category'], hue='Label', multiple='stack', discrete='True')
