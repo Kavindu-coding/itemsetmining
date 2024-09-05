@@ -43,6 +43,6 @@ def adaptive_bin_handling(column_name, df, bin_data):
     # sns.histplot(data=df, x=df[f'{column_name} Category'], hue='Label', multiple='stack', discrete='True')
     # plt.show()
 
-    print("\n================================================================================\n")
+    # print("\n================================================================================\n")
 
     return f"{column_name} Category", bin_data

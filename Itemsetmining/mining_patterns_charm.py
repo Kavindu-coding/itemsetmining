@@ -1,6 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from collections import Counter
 import os
 import numpy as np
@@ -84,7 +82,7 @@ with open('column_order.json', 'w') as file:
 
 with_ID = filtered_df.copy()
 with_ID.insert(0, 'alertID', range(len(with_ID)))
-print("\nAdding a ID number for the records")
+# print("\nAdding a ID number for the records")
 # print(with_ID.head())
 
 dataset_with_ID = with_ID.values.tolist()
@@ -270,7 +268,8 @@ for index, record in enumerate(itemset_records_numbers):
             pattern_record.at[index, 'Label'] = \
             pattern_label_list[index][1][label_percentage_list.index(max(label_percentage_list))][0]
             # Store the pattern with original field and value along with the support count
-            patterns_with_fields.append({"pattern": record_with_field, "support_count": pattern_label_list[index][1][label_percentage_list.index(max(label_percentage_list))][1]})
+            temp_support_count = pattern_label_list[index][1][label_percentage_list.index(max(label_percentage_list))][1]
+            patterns_with_fields.append({"pattern": record_with_field, "support_count": temp_support_count})
         else:
             not_suitable.append(index)
             pattern_record.at[index, 'Label'] = 'Mixed Labels-Not suitable'
@@ -288,7 +287,7 @@ pattern_record = pattern_record.fillna('NaN').infer_objects(copy=False)
 
 pattern_record1 = pattern_record.drop(pattern_record[pattern_record['Label'] == 'Mixed Labels-Not suitable'].index)
 # Save the pattern record DataFrame to a CSV file
-pattern_record1.to_csv('testdata_0.01_3Null_19features.csv', index=False)
+pattern_record1.to_csv('IDS_data_0.01_3Null_19features.csv', index=False)
 
 print(pattern_record1.info())
 
