@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import pairwise_distances
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder,StandardScaler
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder, StandardScaler
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from scipy.spatial.distance import pdist, squareform
@@ -16,7 +16,7 @@ print(df.head(10))
 print(df.info())
 print(df['Label'].value_counts())
 
-patterns_with_NaN = df.iloc[:,2:23]
+patterns_with_NaN = df.iloc[:, 2:23]
 
 duplicate_pattern_count = patterns_with_NaN.duplicated().value_counts()
 print(f"\n\nduplicate_pattern_count :{duplicate_pattern_count}")
@@ -27,12 +27,12 @@ null_handled_patterns = null_handled_patterns.astype(float)
 # categorical_cols = null_handled_patterns.select_dtypes(include=['object']).columns
 
 numerical_cols = ['Tot Fwd Pkts Category', 'Tot Bwd Pkts Category',
-       'TotLen Fwd Pkts Category', 'Pkt Size Avg Category',
-       'Fwd Act Data Pkts Category', 'Init Fwd Win Byts Category',  'Fwd Seg Size Min',
-       'TotLen Bwd Pkts Category', 'Subflow Bwd Byts Category',
-       'Flow Duration Category', 'Flow IAT Mean Category',
-       'Bwd Pkts/s Category', 'Fwd Pkts/s Category']
-categorical_cols = ['Dst Port','Protocol','SYN Flag Cnt', 'ACK Flag Cnt','PSH Flag Cnt',]
+                  'TotLen Fwd Pkts Category', 'Pkt Size Avg Category',
+                  'Fwd Act Data Pkts Category', 'Init Fwd Win Byts Category', 'Fwd Seg Size Min',
+                  'TotLen Bwd Pkts Category', 'Subflow Bwd Byts Category',
+                  'Flow Duration Category', 'Flow IAT Mean Category',
+                  'Bwd Pkts/s Category', 'Fwd Pkts/s Category']
+categorical_cols = ['Dst Port', 'Protocol', 'SYN Flag Cnt', 'ACK Flag Cnt', 'PSH Flag Cnt', ]
 
 print(numerical_cols)
 print(categorical_cols)
@@ -115,16 +115,17 @@ for affinity in metrics:
             print(
                 f"-----------------------------{n_distance, n_clusters, affinity, linkage_method}--------------------------------------")
 
-            if (n_clusters == len(df)):
+            if n_clusters == len(df):
                 print(f"Skipping. number of clusters are {n_clusters}")
                 continue
 
-            if (n_clusters == 1):
+            if n_clusters == 1:
                 print(f"Skipping. number of clusters are {n_clusters}")
                 continue
 
             # Evaluate the clustering performance
-            acc_score, v_measure, silouette, davisB_score = plot_graph_evaluate(clusters,null_handled_patterns,null_handled_patterns_encoded,df)
+            acc_score, v_measure, silouette, davisB_score = plot_graph_evaluate(clusters, null_handled_patterns,
+                                                                                null_handled_patterns_encoded, df)
 
             # Append the evaluation results to score_data
             score_data.append({
@@ -139,3 +140,24 @@ for affinity in metrics:
 
 # Convert the list of dictionaries to a DataFrame
 score_df = pd.DataFrame(score_data)
+cosine_metric = score_df[score_df['metric'] == 'cosine']
+average_cosine = cosine_metric[cosine_metric['linkage'] == 'average']
+num_optimum_clusters = average_cosine[average_cosine['silhouette_score']>0.80].iloc[-1]['number of clusters']
+
+hierarchical_clustering = AgglomerativeClustering(n_clusters=num_optimum_clusters,
+                                                  metric='cosine',
+                                                  linkage='average')
+clusters = hierarchical_clustering.fit_predict(data_matrix)
+
+print("\n======== Optimum Clusters Data==========")
+
+plot_graph_evaluate(clusters, null_handled_patterns, null_handled_patterns_encoded, df)
+
+Z = linkage(data_matrix, method='average', metric='cosine')
+clusters = fcluster(Z, t=num_optimum_clusters, criterion='maxclust')
+print(set(clusters))
+plot_graph_evaluate(clusters, null_handled_patterns, null_handled_patterns_encoded, df)
+
+df['cluster'] = clusters
+
+df.to_csv('cluster_date.csv')
