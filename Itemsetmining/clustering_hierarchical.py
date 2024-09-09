@@ -158,6 +158,7 @@ clusters = fcluster(Z, t=num_optimum_clusters, criterion='maxclust')
 print(set(clusters))
 plot_graph_evaluate(clusters, null_handled_patterns, null_handled_patterns_encoded, df)
 
+
 df['cluster'] = clusters
 
 df.to_csv('cluster_date.csv')
